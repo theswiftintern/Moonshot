@@ -8,20 +8,8 @@
 import SwiftUI
 
 struct MissionView: View {
-    struct CrewMember {
-        let role: String
-        let astronaut: Astronaut
-    }
-    
     let mission: Mission
-    let crew: [CrewMember]
-    
-    var Divider: some View {
-        Rectangle()
-            .frame(height: 2)
-            .foregroundColor(.lightBackground)
-            .padding(.vertical)
-    }
+    let astronauts: [String: Astronaut]
     
     var body: some View {
         GeometryReader { geometry in
@@ -33,8 +21,11 @@ struct MissionView: View {
                         .frame(maxWidth: geometry.size.width * 0.6)
                         .padding(.top)
                     
+                    Text(mission.formattedLaunchDate == "N/A" ? "Didn't launched" : "Launched on \(mission.formattedLaunchDate)")
+                        .font(.subheadline)
+                        
                     VStack(alignment: .leading) {
-                        Divider
+                        HorizontalLineDivider()
                         
                         Text("Mission Highlights")
                             .font(.title.bold())
@@ -42,7 +33,8 @@ struct MissionView: View {
                         
                         Text(mission.description)
                         
-                        Divider
+                        HorizontalLineDivider()
+                            .padding(.top)
                         
                         Text("Crew")
                             .font(.title.bold())
@@ -50,37 +42,7 @@ struct MissionView: View {
                     }
                     .padding(.horizontal)
                     
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack {
-                            ForEach(crew, id: \.role) { crewMember in
-                                NavigationLink {
-                                    AstronautView(astronaut: crewMember.astronaut)
-                                } label : {
-                                    HStack {
-                                        Image(crewMember.astronaut.id)
-                                            .resizable()
-                                            .scaledToFill()
-                                            .frame(width: 128, height: 128)
-                                            .clipShape(Circle())
-                                            .overlay(
-                                                Circle()
-                                                    .strokeBorder(.white, lineWidth: 1)
-                                            )
-                                        
-                                        VStack(alignment: .leading) {
-                                            Text(crewMember.astronaut.name)
-                                                .foregroundColor(.white)
-                                                .font(.headline)
-                                            
-                                            Text(crewMember.role)
-                                                .foregroundColor(.secondary)
-                                        }
-                                    }
-                                    .padding(.horizontal)
-                                }
-                            }
-                        }
-                    }
+                    CrewView(mission: mission, astronauts: astronauts)
                 }
                 .padding(.bottom)
             }
@@ -88,18 +50,6 @@ struct MissionView: View {
         .navigationTitle(mission.displayName)
         .navigationBarTitleDisplayMode(.inline)
         .background(.darkBackground)
-    }
-    
-    init(mission: Mission, astronauts: [String: Astronaut]) {
-        self.mission = mission
-        
-        self.crew = mission.crew.map { member in
-            if let astronaut = astronauts[member.name] {
-                return CrewMember(role: member.role, astronaut: astronaut)
-            } else {
-                fatalError("Missing \(member.name)")
-            }
-        }
     }
 }
 
